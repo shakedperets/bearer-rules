@@ -159,16 +159,31 @@ auxiliary:
     patterns:
       - pattern: ActiveRecord::Base.connection.quote($<!>$<_>)
       - pattern: connection.quote($<!>$<_>)
+      - pattern: ActiveRecord::$<BASE_CLASS>.$<SANITIZE_METHOD>($<!>$<_>)
+        filters:
+          - variable: BASE_CLASS
+            values:
+              - Base
+              - Sanitization
+          - variable: SANITIZE_METHOD
+            detection: ruby_rails_sql_injection_active_record_sanitization_methods
       - pattern: $<SANITIZE_METHOD>($<!>$<_>)
         filters:
           - variable: SANITIZE_METHOD
-            values:
-              - sanitize_sql
-              - sanitize_sql_for_assignment
-              - sanitize_sql_for_conditions
-              - sanitize_conditions
+            detection: ruby_rails_sql_injection_active_record_sanitization_methods
       - pattern: $<_>.to_i
       - pattern: $<_>.to_f
+  - id: ruby_rails_sql_injection_active_record_sanitization_methods
+    patterns:
+      - sanitize_sql
+      - sanitize_conditions
+      - sanitize_sql_array
+      - sanitize_sql_for_assignment
+      - sanitize_sql_for_conditions
+      - sanitize_sql_hash_for_assignment
+      - sanitize_sql_hash_for_conditions
+      - sanitize_sql_for_order
+      - sanitize_sql_like
 languages:
   - ruby
 severity: critical

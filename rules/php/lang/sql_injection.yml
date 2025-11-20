@@ -45,6 +45,12 @@ auxiliary:
               - pg_escape_string
               - mysql_escape_string
               - db2_escape_string
+      - pattern: $<_>->real_escape_string($<!>$<_>)
+      - pattern: $<_>->escape_string($<!>$<_>)
+      - intval($<!>$<_>)
+      - floatval($<!>$<_>)
+      - pattern: (int)$<!>$<_>
+      - pattern: (float)$<!>$<_>
 languages:
   - php
 severity: critical

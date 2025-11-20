@@ -66,6 +66,10 @@ auxiliary:
           - variable: ADAPTER
             detection: python_shared_common_sql_user_input_psycopg_adapter
             scope: cursor
+      - int($<!>$<_>)
+      - float($<!>$<_>)
+      - str($<!>$<_>)
+      - pattern: connection.ops.quote_name($<!>$<_>)
   - id: python_shared_common_sql_user_input_pymysql_connection
     patterns:
       - pattern: $<CONNECT>($<...>)

@@ -13,7 +13,7 @@ patterns:
           - execute_batch2
           - query
       - variable: EXTERNAL_INPUT
-        detection: ruby_shared_common_external_input
+        detection: ruby_lang_sql_injection_external_input
         scope: result
 auxiliary:
   - id: ruby_lang_sql_injection_sqlite_db
@@ -22,6 +22,20 @@ auxiliary:
       - |
         SQLite3::Database.new($<...>) do |$<!>$<DB>|
         end
+  - id: ruby_lang_sql_injection_external_input
+    sanitizer: ruby_lang_sql_injection_sanitized
+    patterns:
+      - pattern: $<COMMON_INPUT>
+        filters:
+          - variable: COMMON_INPUT
+            detection: ruby_shared_common_external_input
+            scope: cursor
+  - id: ruby_lang_sql_injection_sanitized
+    patterns:
+      - pattern: $<_>.to_i
+      - pattern: $<_>.to_f
+      - pattern: Integer($<!>$<_>)
+      - pattern: Float($<!>$<_>)
 languages:
   - ruby
 severity: critical

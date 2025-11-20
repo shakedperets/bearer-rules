@@ -138,6 +138,19 @@ auxiliary:
       - pattern: $<_>.hash($<!>$<_>)
       - |
         { replacements: [$<...>$<!>$<_>$<...>] }
+      - parseInt($<!>$<_>$<...>)
+      - parseFloat($<!>$<_>$<...>)
+      - Number($<!>$<_>)
+      - pattern: $<MYSQL>.escape($<!>$<_>)
+        filters:
+          - variable: MYSQL
+            regex: (?i)mysql
+      - pattern: $<MYSQL>.escapeId($<!>$<_>)
+        filters:
+          - variable: MYSQL
+            regex: (?i)mysql
+      - pattern: $<_>.escape($<!>$<_>)
+      - pattern: $<_>.escapeId($<!>$<_>)
 languages:
   - javascript
 severity: critical

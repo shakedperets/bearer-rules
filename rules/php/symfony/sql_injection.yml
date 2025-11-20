@@ -49,8 +49,13 @@ auxiliary:
   - id: php_symfony_sql_injection_input_sanitizer
     patterns:
       - pattern: $<_>->quote($<!>$<_>)
+      - pattern: $<_>->quoteIdentifier($<!>$<_>)
       - pattern: $<_>->createNamedParameter($<!>$<_>$<...>)
       - pattern: $<_>->setParameter($<!>$<_>$<...>)
+      - intval($<!>$<_>)
+      - floatval($<!>$<_>)
+      - pattern: (int)$<!>$<_>
+      - pattern: (float)$<!>$<_>
 languages:
   - php
 severity: critical
