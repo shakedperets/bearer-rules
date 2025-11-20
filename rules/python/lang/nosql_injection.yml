@@ -106,6 +106,8 @@ auxiliary:
   - id: python_lang_nosql_injection_sanitizer
     patterns:
       - str($<!>$<_>)
+      - int($<!>$<_>)
+      - float($<!>$<_>)
       - pattern: $<BSON_TYPE>($<!>$<_>)
         filters:
           - variable: BSON_TYPE

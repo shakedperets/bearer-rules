@@ -80,6 +80,15 @@ auxiliary:
   - id: go_gosec_sql_concat_sqli_input_sanitizer
     patterns:
       - pattern: $<_>.QuoteIdentifier($<!>$<_>)
+      - pattern: $<STRCONV>.$<METHOD>($<!>$<_>$<...>)
+        filters:
+          - variable: STRCONV
+            regex: \Astrconv\z
+          - variable: METHOD
+            values:
+              - Atoi
+              - ParseInt
+              - ParseFloat
   - id: go_gosec_sql_concat_sqli_unsanitized_input
     sanitizer: go_gosec_sql_concat_sqli_input_sanitizer
     patterns:

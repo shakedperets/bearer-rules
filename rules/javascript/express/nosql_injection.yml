@@ -35,6 +35,10 @@ auxiliary:
   - id: javascript_lang_nosql_injection_sanitizer
     patterns:
       - $<!>$<_>.toString()
+      - parseInt($<!>$<_>$<...>)
+      - parseFloat($<!>$<_>$<...>)
+      - Number($<!>$<_>)
+      - String($<!>$<_>)
 languages:
   - javascript
 severity: critical
