@@ -1,0 +1,2 @@
+[console_scripts]
+brg = brg.cli:app
