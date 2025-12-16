@@ -1,0 +1,24 @@
+Generate a Bearer SAST rule based on the following specification.
+
+## Specification
+{spec}
+
+## Language and Framework
+- Language: {language}
+- Framework: {framework}
+
+## Context from Existing Rules
+{context}
+
+## Instructions
+1. Analyze the specification to understand what vulnerability or pattern to detect
+2. Review the context examples to understand similar patterns
+3. Create a Bearer rule following the syntax guidelines
+4. Ensure your rule uses proper Bearer syntax ($<VAR> not regex)
+5. Include auxiliary blocks for sinks, sources, and sanitizers as needed
+6. Make the rule specific to the {language} language
+7. If {framework} is specified, consider framework-specific patterns
+
+## Output Format
+Provide ONLY the YAML rule content, no explanations or markdown formatting.
+The rule should be ready to save directly to a .yml file.
