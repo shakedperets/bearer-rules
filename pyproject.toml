@@ -1,0 +1,20 @@
+[project]
+name = "brg"
+version = "0.1.0"
+description = "Bearer rule generation workflow CLI"
+authors = [{name="Bearer", email="dev@bearer.com"}]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.12",
+    "langgraph>=0.2.26",
+    "pydantic>=2.6",
+    "rich>=13.7",
+]
+
+[project.scripts]
+brg = "brg.cli:app"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
