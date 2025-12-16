@@ -16,6 +16,10 @@ class RunConfig:
     corpus_path: Path = Path("rules")
     output_path: Path = Path(".brg_output")
     mode: str = "framework"
+    language: str = "ruby"
+    framework: Optional[str] = None
+    vuln_type: Optional[str] = None
+    use_embeddings: bool = True
 
     def run_directory(self) -> Path:
         timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
@@ -38,6 +42,10 @@ class AgentSettings:
     output_path: Path
     mode: str = "framework"
     run_dir: Optional[Path] = field(default=None)
+    language: str = "ruby"
+    framework: Optional[str] = None
+    vuln_type: Optional[str] = None
+    use_embeddings: bool = True
 
     @classmethod
     def from_config(cls, config: RunConfig) -> "AgentSettings":
@@ -51,4 +59,8 @@ class AgentSettings:
             output_path=config.output_path,
             mode=config.mode,
             run_dir=config.run_directory(),
+            language=config.language,
+            framework=config.framework,
+            vuln_type=config.vuln_type,
+            use_embeddings=config.use_embeddings,
         )

@@ -24,6 +24,10 @@ def _run_workflow(
     max_iterations: int,
     corpus_path: Path,
     output_path: Path,
+    language: str,
+    framework: Optional[str],
+    vuln_type: Optional[str],
+    use_embeddings: bool,
 ) -> None:
     config = RunConfig(
         model=model,
@@ -34,12 +38,21 @@ def _run_workflow(
         corpus_path=corpus_path,
         output_path=output_path,
         mode=mode,
+        language=language,
+        framework=framework,
+        vuln_type=vuln_type,
+        use_embeddings=use_embeddings,
     )
 
     settings = AgentSettings.from_config(config)
     run_dir = settings.run_dir or config.ensure_output()
     run_dir.mkdir(parents=True, exist_ok=True)
     console.print(f"Starting {mode} run in [bold]{run_dir}[/bold]")
+    console.print(f"Language: [cyan]{language}[/cyan]")
+    if framework:
+        console.print(f"Framework: [cyan]{framework}[/cyan]")
+    if vuln_type:
+        console.print(f"Vulnerability Type: [cyan]{vuln_type}[/cyan]")
 
     graph = RuleGraph(settings)
     state = graph.run()
@@ -56,6 +69,10 @@ def framework(
     max_iterations: int = typer.Option(3, help="Maximum number of iterations"),
     corpus_path: Path = typer.Option(Path("rules"), help="Path to sample corpus"),
     output_path: Path = typer.Option(Path(".brg_output"), help="Directory for outputs"),
+    language: str = typer.Option("ruby", help="Target programming language (ruby, java, javascript, python)"),
+    framework: Optional[str] = typer.Option(None, help="Target framework (rails, spring, express, django, play)"),
+    vuln_type: Optional[str] = typer.Option(None, help="Vulnerability type (sql_injection, xss, path_traversal)"),
+    use_embeddings: bool = typer.Option(True, help="Use semantic search with embeddings"),
 ) -> None:
     """Run the framework workflow using the default corpus."""
 
@@ -68,6 +85,10 @@ def framework(
         max_iterations=max_iterations,
         corpus_path=corpus_path,
         output_path=output_path,
+        language=language,
+        framework=framework,
+        vuln_type=vuln_type,
+        use_embeddings=use_embeddings,
     )
 
 
@@ -80,6 +101,10 @@ def custom(
     max_iterations: int = typer.Option(3, help="Maximum number of iterations"),
     corpus_path: Path = typer.Option(..., help="Path to custom corpus", exists=True, file_okay=False),
     output_path: Path = typer.Option(Path(".brg_output"), help="Directory for outputs"),
+    language: str = typer.Option("ruby", help="Target programming language (ruby, java, javascript, python)"),
+    framework: Optional[str] = typer.Option(None, help="Target framework (rails, spring, express, django, play)"),
+    vuln_type: Optional[str] = typer.Option(None, help="Vulnerability type (sql_injection, xss, path_traversal)"),
+    use_embeddings: bool = typer.Option(True, help="Use semantic search with embeddings"),
 ) -> None:
     """Run the custom workflow using a provided corpus path."""
 
@@ -92,6 +117,10 @@ def custom(
         max_iterations=max_iterations,
         corpus_path=corpus_path,
         output_path=output_path,
+        language=language,
+        framework=framework,
+        vuln_type=vuln_type,
+        use_embeddings=use_embeddings,
     )
 
 
