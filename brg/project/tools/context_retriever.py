@@ -13,6 +13,14 @@ except ImportError:
     EMBEDDINGS_AVAILABLE = False
     SentenceTransformer = None
 
+# Try to import numpy for semantic search
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    np = None
+
 
 class ContextRetriever:
     """
@@ -121,7 +129,7 @@ class ContextRetriever:
         Returns:
             List of snippet contents, ordered by semantic similarity
         """
-        if self._model is None or self._embeddings is None:
+        if self._model is None or self._embeddings is None or not NUMPY_AVAILABLE:
             # Fall back to keyword search
             return self._retrieve_keyword(query, limit)
         
@@ -130,7 +138,6 @@ class ContextRetriever:
             query_embedding = self._model.encode([query], convert_to_tensor=False)[0]
             
             # Compute cosine similarities
-            import numpy as np
             similarities = np.dot(self._embeddings, query_embedding) / (
                 np.linalg.norm(self._embeddings, axis=1) * np.linalg.norm(query_embedding)
             )
