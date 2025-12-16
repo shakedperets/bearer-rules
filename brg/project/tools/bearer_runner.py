@@ -34,10 +34,13 @@ class BearerRunner:
             "--output",
             str(sarif_path),
         ]
-        try:
-            subprocess.run(cmd, check=True, capture_output=True)
-        except Exception as exc:
-            # Write a minimal SARIF to keep the pipeline moving even when the binary is unavailable.
+        # Use check=False to allow Bearer to exit with code 1 when it finds vulnerabilities
+        # Only raise an error if the SARIF file wasn't created (indicating a real failure)
+        result = subprocess.run(cmd, check=False, capture_output=True)
+        
+        # If SARIF file wasn't created, Bearer failed to run properly
+        if not sarif_path.exists():
+            # Write a minimal SARIF to keep the pipeline moving
             sarif_path.write_text(
                 json.dumps(
                     {
@@ -48,7 +51,10 @@ class BearerRunner:
                                 "invocations": [
                                     {
                                         "executionSuccessful": False,
-                                        "properties": {"error": str(exc)},
+                                        "properties": {
+                                            "error": f"Bearer exited with code {result.returncode}",
+                                            "stderr": result.stderr.decode('utf-8') if result.stderr else "",
+                                        },
                                     }
                                 ],
                             }

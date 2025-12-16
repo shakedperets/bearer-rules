@@ -25,6 +25,34 @@ class Evaluator:
                     expectations.append({"path": str(file_path), "line": idx, "type": "good"})
         return expectations
 
+    def _match_path(self, expected_path: str, result_path: str) -> bool:
+        """
+        Match paths properly, handling both relative and absolute paths.
+        Resolves paths to avoid collisions from same filename in different directories.
+        """
+        expected = Path(expected_path).resolve()
+        result = Path(result_path).resolve()
+        
+        # Try exact match first
+        if expected == result:
+            return True
+        
+        # Try if result path ends with expected path (for relative paths in SARIF)
+        try:
+            expected.relative_to(result.parent)
+            return expected.name == result.name and str(expected).endswith(str(result))
+        except ValueError:
+            pass
+        
+        # Try if expected ends with result (SARIF might have relative path)
+        try:
+            result.relative_to(expected.parent)
+            return expected.name == result.name and str(expected).endswith(str(result))
+        except ValueError:
+            pass
+        
+        return False
+
     def _match_finding(self, expected_line: int, result_line: int) -> bool:
         return abs(expected_line - result_line) <= self.tolerance
 
@@ -38,7 +66,7 @@ class Evaluator:
             exp_line = expectation["line"]
             if expectation["type"] == "bad":
                 matches = [
-                    r for r in results if path.endswith(r.path) or r.path.endswith(Path(path).name)
+                    r for r in results if self._match_path(path, r.path)
                 ]
                 found_match = any(self._match_finding(exp_line, r.line) for r in matches)
                 if not found_match:
@@ -46,7 +74,7 @@ class Evaluator:
                     messages.append(f"Missing finding for BAD marker at {path}:{exp_line}")
             else:
                 relevant = [
-                    r for r in results if path.endswith(r.path) or r.path.endswith(Path(path).name)
+                    r for r in results if self._match_path(path, r.path)
                 ]
                 if any(self._match_finding(exp_line, r.line) for r in relevant):
                     passed = False
