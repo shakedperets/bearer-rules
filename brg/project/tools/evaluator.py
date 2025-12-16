@@ -25,6 +25,35 @@ class Evaluator:
                     expectations.append({"path": str(file_path), "line": idx, "type": "good"})
         return expectations
 
+    def _match_path(self, expected_path: str, result_path: str) -> bool:
+        """
+        Match paths properly, handling both relative and absolute paths.
+        Resolves paths to avoid collisions from same filename in different directories.
+        """
+        # Normalize paths for comparison
+        expected = Path(expected_path)
+        result = Path(result_path)
+        
+        # Try exact string match first
+        if str(expected) == str(result):
+            return True
+        
+        # Convert both to normalized forms (handle / vs \ on Windows)
+        expected_parts = expected.as_posix().split('/')
+        result_parts = result.as_posix().split('/')
+        
+        # If result path is shorter, check if expected ends with result
+        if len(result_parts) <= len(expected_parts):
+            if expected_parts[-len(result_parts):] == result_parts:
+                return True
+        
+        # If expected path is shorter, check if result ends with expected
+        if len(expected_parts) <= len(result_parts):
+            if result_parts[-len(expected_parts):] == expected_parts:
+                return True
+        
+        return False
+
     def _match_finding(self, expected_line: int, result_line: int) -> bool:
         return abs(expected_line - result_line) <= self.tolerance
 
@@ -38,7 +67,7 @@ class Evaluator:
             exp_line = expectation["line"]
             if expectation["type"] == "bad":
                 matches = [
-                    r for r in results if path.endswith(r.path) or r.path.endswith(Path(path).name)
+                    r for r in results if self._match_path(path, r.path)
                 ]
                 found_match = any(self._match_finding(exp_line, r.line) for r in matches)
                 if not found_match:
@@ -46,7 +75,7 @@ class Evaluator:
                     messages.append(f"Missing finding for BAD marker at {path}:{exp_line}")
             else:
                 relevant = [
-                    r for r in results if path.endswith(r.path) or r.path.endswith(Path(path).name)
+                    r for r in results if self._match_path(path, r.path)
                 ]
                 if any(self._match_finding(exp_line, r.line) for r in relevant):
                     passed = False

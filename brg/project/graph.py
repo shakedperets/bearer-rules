@@ -18,6 +18,7 @@ from .tools.bearer_runner import BearerRunner
 from .tools.context_loader import ContextLoader
 from .tools.context_retriever import ContextRetriever
 from .tools.evaluator import Evaluator
+from .tools.prompt_loader import PromptLoader
 from .tools.token_tracker import TokenTracker
 
 
@@ -27,11 +28,12 @@ class RuleGraph:
         self.tracker = TokenTracker(settings.model, settings.token_budget, settings.max_llm_calls)
         self.artifacts = Artifacts(settings.run_dir)
         self.context_loader = ContextLoader(settings.corpus_path)
-        self.context_retriever = ContextRetriever([])
+        self.context_retriever = ContextRetriever([], use_embeddings=settings.use_embeddings)
+        self.prompt_loader = PromptLoader()
         self.spec_agent = SpecAgent(self.tracker, self.artifacts)
         self.context_agent = ContextAgent(self.context_loader, self.context_retriever, self.tracker, self.artifacts)
         self.testgen_agent = TestGenAgent(settings.corpus_path, self.tracker, self.artifacts)
-        self.rulegen_agent = RuleGenAgent(self.tracker, self.artifacts)
+        self.rulegen_agent = RuleGenAgent(self.tracker, self.artifacts, self.prompt_loader)
         self.repair_agent = RepairAgent(self.tracker, self.artifacts)
         self.summary_agent = SummaryAgent(self.tracker, self.artifacts)
         self.runner = BearerRunner(settings.bearer_binary)
@@ -90,7 +92,13 @@ class RuleGraph:
         return "repair"
 
     def run(self) -> Dict:
-        initial_state: RunState = {"iteration": 0, "run_dir": self.settings.run_dir}
+        initial_state: RunState = {
+            "iteration": 0,
+            "run_dir": self.settings.run_dir,
+            "language": self.settings.language,
+            "framework": self.settings.framework,
+            "vuln_type": self.settings.vuln_type,
+        }
         state = self.workflow.invoke(initial_state)
         metrics = self.tracker.to_metrics()
         trace = [msg.__dict__ for msg in self.tracker.to_trace()]

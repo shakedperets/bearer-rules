@@ -1,0 +1,1 @@
+"""Bearer Rule Generator package."""

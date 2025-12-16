@@ -39,6 +39,9 @@ class RunState(TypedDict, total=False):
     artifacts_dir: str
     summary: str
     run_dir: Path
+    language: str
+    framework: Optional[str]
+    vuln_type: Optional[str]
 
 
 @dataclass

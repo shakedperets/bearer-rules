@@ -1,0 +1,148 @@
+## Common LLM Failure Patterns When Generating Bearer Rules
+
+This document captures patterns where LLMs commonly fail when generating Bearer SAST rules.
+Learn from these mistakes to improve future rule generation.
+
+### Pattern 1: Using Regex Instead of Bearer Syntax
+**Failure**: LLMs often use regex capture groups instead of Bearer's variable syntax
+**Example**:
+```yaml
+# WRONG
+pattern: execute\((.+)\)
+
+# CORRECT
+pattern: $<SINK>($<ARG>)
+```
+**Fix**: Always use `$<VARIABLE>` syntax, never regex groups
+
+### Pattern 2: Forgetting Auxiliary Blocks
+**Failure**: Creating filters that reference non-existent auxiliary detections
+**Example**:
+```yaml
+# WRONG - no auxiliary block defined
+filters:
+  - variable: SINK
+    detection: sql_function
+```
+**Fix**: Every detection referenced in filters must have a corresponding auxiliary block
+
+### Pattern 3: Over-Complicated Patterns
+**Failure**: Trying to match everything in the pattern instead of using filters
+**Example**:
+```yaml
+# WRONG - too specific
+pattern: ActiveRecord::Base.connection.execute($<QUERY>)
+
+# CORRECT - broad pattern + filter
+pattern: $<OBJ>.$<METHOD>($<QUERY>)
+filters:
+  - variable: METHOD
+    detection: sql_methods
+```
+**Fix**: Keep patterns simple, use filters to narrow down matches
+
+### Pattern 4: Incorrect Sanitizer Definitions
+**Failure**: Not using `not:` for sanitizer patterns
+**Example**:
+```yaml
+# WRONG
+auxiliary:
+  safe_input:
+    patterns:
+      - pattern: sanitize($<INPUT>)
+
+# CORRECT
+auxiliary:
+  safe_input:
+    patterns:
+      - not:
+          detection: tainted_source
+```
+**Fix**: Sanitizers should use `not:` to exclude safe patterns
+
+### Pattern 5: Missing Critical Metadata
+**Failure**: Omitting required fields like message, description, or CWE
+**Example**:
+```yaml
+# WRONG - missing message
+languages: [ruby]
+patterns:
+  - pattern: $<CODE>
+```
+**Fix**: Always include:
+- `metadata.description`
+- `metadata.cwe_id` (as string)
+- `severity`
+- `message`
+
+### Pattern 6: Incorrect YAML Indentation
+**Failure**: Using wrong indentation (tabs, 4 spaces, inconsistent)
+**Example**:
+```yaml
+# WRONG - inconsistent indentation
+patterns:
+    - pattern: |
+        $<CODE>
+      filters:
+    - variable: CODE
+```
+**Fix**: Always use 2 spaces for YAML indentation
+
+### Pattern 7: Language Mismatch
+**Failure**: Generating rules for the wrong language (e.g., Ruby syntax for Java)
+**Example**:
+```yaml
+# WRONG - Ruby method for Java rule
+languages: [java]
+patterns:
+  - pattern: execute($<QUERY>)  # Ruby-style, Java needs class context
+```
+**Fix**: Understand language-specific syntax:
+- Ruby: `object.method(args)`
+- Java: `ClassName.method(args)` or `object.method(args)`
+- JavaScript: Consider both `func()` and `obj.method()`
+
+### Pattern 8: Not Handling Framework Patterns
+**Failure**: Ignoring framework-specific APIs when framework is specified
+**Example**:
+```yaml
+# WRONG - generic pattern for Rails app
+pattern: execute($<SQL>)
+
+# CORRECT - Rails-specific
+pattern: ActiveRecord::Base.connection.execute($<SQL>)
+```
+**Fix**: When framework is specified (Rails, Spring, Express), use framework-specific patterns
+
+### Model-Specific Observations
+
+**GPT-4**:
+- Often generates regex instead of Bearer syntax
+- Good at understanding security concepts
+- Sometimes over-explains instead of just providing YAML
+
+**Claude**:
+- Better at following YAML format
+- Sometimes misses auxiliary blocks
+- Good at context retention
+
+**GPT-3.5**:
+- Frequently forgets auxiliary blocks
+- Struggles with complex filter logic
+- Needs more explicit instructions
+
+### Recovery Strategies
+1. If rule fails parsing: Check YAML indentation first
+2. If rule doesn't match: Pattern might be too specific
+3. If too many false positives: Add sanitizer auxiliary blocks
+4. If missing detections: Pattern might be too narrow, add more sink patterns
+
+### Testing Checklist
+Before considering a generated rule complete:
+- [ ] Valid YAML syntax (2-space indentation)
+- [ ] Uses `$<VAR>` not regex
+- [ ] All filters reference existing auxiliary blocks
+- [ ] Has message field
+- [ ] Has metadata with description and cwe_id
+- [ ] Language matches the target codebase
+- [ ] Framework-specific if framework provided

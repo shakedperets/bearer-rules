@@ -10,10 +10,20 @@ dependencies = [
     "langgraph>=0.2.26",
     "pydantic>=2.6",
     "rich>=13.7",
+    "langchain-openai>=0.2.0",
+]
+
+[project.optional-dependencies]
+embeddings = [
+    "sentence-transformers>=2.0.0",
 ]
 
 [project.scripts]
 brg = "brg.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["brg*"]
+exclude = ["rules*"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

@@ -1,0 +1,53 @@
+Generate a Bearer SAST rule to detect SQL Injection vulnerabilities.
+
+## Specification
+{spec}
+
+## Language and Framework
+- Language: {language}
+- Framework: {framework}
+
+## SQL Injection Pattern Overview
+SQL injection occurs when unsanitized user input is concatenated or interpolated into SQL queries.
+
+### Key Components
+1. **SQL Sinks**: Functions that execute SQL (execute, query, exec, executeQuery, etc.)
+2. **Tainted Sources**: User input (params, request data, user input)
+3. **Sanitizers**: Parameterized queries, prepared statements, query builders with placeholders
+
+### Language-Specific Patterns
+
+**Ruby/Rails:**
+- Dangerous: Model.where with string interpolation or concatenation
+- Safe: Model.where with placeholders or hash syntax
+
+**Java/JDBC:**
+- Dangerous: statement.executeQuery with string concatenation
+- Safe: preparedStatement.setString with parameter binding
+
+**JavaScript/Node:**
+- Dangerous: db.query with string concatenation or template literals
+- Safe: db.query with parameter placeholders
+
+**Python:**
+- Dangerous: cursor.execute with string formatting or concatenation
+- Safe: cursor.execute with parameter placeholders
+
+## Context from Existing Rules
+{context}
+
+## Instructions
+1. Create a rule that detects SQL query execution with unsanitized input
+2. Use $<SINK> to capture the SQL execution function
+3. Use $<TAINTED> to capture potentially tainted data
+4. Define auxiliary blocks for:
+   - sql_sink: SQL execution functions for {language}
+   - tainted_source: User input sources
+   - safe_sql: Sanitized/parameterized patterns (use not: detection)
+5. Set CWE ID to "89" for SQL Injection
+6. Set severity to "high"
+7. Make the message clear and actionable
+
+## Output Format
+Provide ONLY the YAML rule content, no explanations or markdown formatting.
+The rule should be ready to save directly to a .yml file.
