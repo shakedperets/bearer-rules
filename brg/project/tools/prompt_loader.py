@@ -18,8 +18,8 @@ class PromptLoader:
                         Defaults to brg/prompts relative to this file.
         """
         if prompts_dir is None:
-            # Default to brg/prompts directory
-            prompts_dir = Path(__file__).parent.parent / "prompts"
+            # Default to brg/prompts directory (go up two levels from tools)
+            prompts_dir = Path(__file__).parent.parent.parent / "prompts"
         self.prompts_dir = prompts_dir
     
     @lru_cache(maxsize=32)

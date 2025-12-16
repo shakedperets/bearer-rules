@@ -18,32 +18,32 @@ SQL injection occurs when unsanitized user input is concatenated or interpolated
 ### Language-Specific Patterns
 
 **Ruby/Rails:**
-- Dangerous: `Model.where("name = '#{params[:name]}'")`, `ActiveRecord::Base.connection.execute(query)`
-- Safe: `Model.where("name = ?", params[:name])`, `Model.where(name: params[:name])`
+- Dangerous: Model.where with string interpolation or concatenation
+- Safe: Model.where with placeholders or hash syntax
 
 **Java/JDBC:**
-- Dangerous: `statement.executeQuery("SELECT * FROM users WHERE id = " + userId)`
-- Safe: `preparedStatement.setString(1, userId)`
+- Dangerous: statement.executeQuery with string concatenation
+- Safe: preparedStatement.setString with parameter binding
 
 **JavaScript/Node:**
-- Dangerous: `db.query("SELECT * FROM users WHERE id = " + req.params.id)`
-- Safe: `db.query("SELECT * FROM users WHERE id = ?", [req.params.id])`
+- Dangerous: db.query with string concatenation or template literals
+- Safe: db.query with parameter placeholders
 
 **Python:**
-- Dangerous: `cursor.execute("SELECT * FROM users WHERE id = " + user_id)`
-- Safe: `cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))`
+- Dangerous: cursor.execute with string formatting or concatenation
+- Safe: cursor.execute with parameter placeholders
 
 ## Context from Existing Rules
 {context}
 
 ## Instructions
 1. Create a rule that detects SQL query execution with unsanitized input
-2. Use `$<SINK>` to capture the SQL execution function
-3. Use `$<TAINTED>` to capture potentially tainted data
+2. Use $<SINK> to capture the SQL execution function
+3. Use $<TAINTED> to capture potentially tainted data
 4. Define auxiliary blocks for:
-   - `sql_sink`: SQL execution functions for {language}
-   - `tainted_source`: User input sources
-   - `safe_sql`: Sanitized/parameterized patterns (use `not:` detection)
+   - sql_sink: SQL execution functions for {language}
+   - tainted_source: User input sources
+   - safe_sql: Sanitized/parameterized patterns (use not: detection)
 5. Set CWE ID to "89" for SQL Injection
 6. Set severity to "high"
 7. Make the message clear and actionable

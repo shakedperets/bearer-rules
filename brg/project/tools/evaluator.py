@@ -30,26 +30,27 @@ class Evaluator:
         Match paths properly, handling both relative and absolute paths.
         Resolves paths to avoid collisions from same filename in different directories.
         """
-        expected = Path(expected_path).resolve()
-        result = Path(result_path).resolve()
+        # Normalize paths for comparison
+        expected = Path(expected_path)
+        result = Path(result_path)
         
-        # Try exact match first
-        if expected == result:
+        # Try exact string match first
+        if str(expected) == str(result):
             return True
         
-        # Try if result path ends with expected path (for relative paths in SARIF)
-        try:
-            expected.relative_to(result.parent)
-            return expected.name == result.name and str(expected).endswith(str(result))
-        except ValueError:
-            pass
+        # Convert both to normalized forms (handle / vs \ on Windows)
+        expected_parts = expected.as_posix().split('/')
+        result_parts = result.as_posix().split('/')
         
-        # Try if expected ends with result (SARIF might have relative path)
-        try:
-            result.relative_to(expected.parent)
-            return expected.name == result.name and str(expected).endswith(str(result))
-        except ValueError:
-            pass
+        # If result path is shorter, check if expected ends with result
+        if len(result_parts) <= len(expected_parts):
+            if expected_parts[-len(result_parts):] == result_parts:
+                return True
+        
+        # If expected path is shorter, check if result ends with expected
+        if len(expected_parts) <= len(result_parts):
+            if result_parts[-len(expected_parts):] == expected_parts:
+                return True
         
         return False
 
